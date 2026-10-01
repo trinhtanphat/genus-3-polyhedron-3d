@@ -1,0 +1,15 @@
+# Source material downloaded only for verification; not redistributed
+arxiv-source.tar
+00README.json
+main.tex
+main.bbl
+references.bib
+figure1.png
+figure2.png
+
+# Local/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+node_modules/
