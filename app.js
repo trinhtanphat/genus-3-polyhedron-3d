@@ -287,6 +287,8 @@ function setCameraPose(position, up) {
   camera.up.set(...up);
   camera.position.set(...position);
   controls.target.set(0, 0, 0);
+  viewport.dataset.cameraPosition = position.join(',');
+  viewport.dataset.cameraUp = up.join(',');
   updateCameraClipping();
   controls.update();
 }
