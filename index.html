@@ -37,7 +37,7 @@
     <section class="purpose-card full-width" aria-labelledby="purposeTitle">
       <div class="purpose-copy">
         <p class="eyebrow">What is this app? · Ứng dụng này làm gì?</p>
-        <h2 id="purposeTitle">An interactive scientific viewer for exploring and independently checking a newly published genus-3 polyhedron.</h2>
+        <h2 id="purposeTitle">An interactive scientific viewer for the published exact integer-coordinate realization of a genus-3 polyhedral surface.</h2>
         <p><strong>Tiếng Việt:</strong> Ứng dụng biến bộ tọa độ nguyên và cấu trúc mặt được công bố trong preprint của Ruslan Mizhaev thành mô hình 3D có thể xoay, zoom rất sâu/rất xa và kiểm tra trực quan. Bạn có thể xem từng mặt, từng đỉnh, phương trình mặt phẳng, quan hệ kề, đối xứng C₄ và các bất biến topo như Euler characteristic và genus.</p>
         <p><strong>English:</strong> It is not a CAD editor or an artist's approximation. It is a reproducible visualization and verification companion for the exact published coordinate certificate.</p>
       </div>
@@ -52,13 +52,16 @@
       <div class="info-copy">
         <p class="eyebrow">CAD orientation · Published reference views</p>
         <h2 id="referenceViewTitle">Why the exact same polyhedron can look “wrong” from another angle</h2>
-        <p><strong>Tiếng Việt:</strong> Hình học không đổi: 24 tọa độ nguyên và 8 face-walk quyết định chính xác bề mặt. Điểm khác trước đây chủ yếu là cách trình bày: viewer dùng trục đứng kiểu Three.js/Y-up, camera phối cảnh và mặt bán trong suốt, trong khi tác giả mô tả khả năng tái dựng bằng CAD và các hình trong bài là những góc nhìn đại diện. Bản này dùng quy ước CAD <strong>Z-up</strong>, mặt mặc định đục 100%, và có ba nút <strong>Paper 1–3</strong> để tái tạo các hướng nhìn của Figure 1 gần nhất có thể.</p>
-        <p><strong>English:</strong> The coordinates and face walks define the exact surface; camera orientation does not. This viewer now uses CAD-style Z-up views and opaque faces by default. “Paper 1–3” are calibrated/recreated directions from the published Figure 1, not a claim of pixel-identical camera metadata.</p>
-        <p class="small-note">Figure 2 of the paper explicitly shows F1 as orange and F3 as green; the viewer follows those two source colors and uses a paper-inspired palette for the remaining faces.</p>
+        <p><strong>Tiếng Việt:</strong> Hình học không đổi: 24 tọa độ nguyên và 8 face-walk quyết định chính xác bề mặt. Bản cũ nhìn “sai sai” chủ yếu vì Y-up, phối cảnh mạnh và mặt bán trong suốt. Bản này dùng quy ước CAD <strong>Z-up</strong>, mặt mặc định đục 100%, và chế độ <strong>Paper 1–3</strong> dùng nền trắng + màu phẳng để đối chiếu trực tiếp với Figure 1.</p>
+        <p><strong>Đối chiếu ảnh nguồn:</strong> Paper 1 được khôi phục là phép chiếu <strong>+Z</strong>; Paper 3 là phép chiếu <strong>+Y</strong> với đảo chiều ngang để khớp handedness của ảnh nguồn. Paper 2 là góc xiên được hiệu chỉnh bằng đối chiếu raster; lưới tinh cho kết quả tốt nhất quanh azimuth 44°, elevation −4°. Bài báo không công bố camera metadata, nên Paper 2 được ghi rõ là calibrated recreation chứ không phải “góc camera chính xác tuyệt đối”.</p>
+        <p><strong>English:</strong> The coordinates and face walks define the exact surface; camera presentation does not. Paper reference mode uses flat colors, white background, weak-perspective-style narrow FOV, and source-image handedness where needed.</p>
+        <p class="small-note"><strong>Color audit:</strong> Figure 2 directly identifies F1 as orange and F3 as green. Cross-view silhouette/color matching in Figure 1 recovers F4 teal, F5 blue, F7 magenta and F8 gold. F2/F6 use distinguishable fallback colors because the published reference panels do not expose them as dominant flat-color regions.</p>
+        <p class="small-note"><strong>Historical scope:</strong> the 2026 paper says this realization is based on an earlier construction and preserves its incidence structure. It is a coordinate certificate/reproducible realization, not a proof that the abstract structure was first conceived in 2026.</p>
       </div>
       <div class="source-links">
         <a href="https://arxiv.org/pdf/2609.17700#page=3" target="_blank" rel="noopener noreferrer">Published Figure 1 ↗</a>
         <a href="https://arxiv.org/pdf/2609.17700#page=4" target="_blank" rel="noopener noreferrer">Published Figure 2 ↗</a>
+        <a href="https://arxiv.org/abs/2609.32998" target="_blank" rel="noopener noreferrer">Different 2026 genus-3 example ↗</a>
       </div>
     </section>
 
@@ -73,9 +76,9 @@
           <button class="preset" data-view="front" type="button" title="CAD front: look along Y, show X-Z">Front</button>
           <button class="preset" data-view="top" type="button" title="CAD top: look along Z, show X-Y">Top</button>
           <button class="preset" data-view="right" type="button" title="CAD right: look along X, show Y-Z">Right</button>
-          <button class="preset paper-preset" data-view="paper1" type="button" title="Recreated direction of published Figure 1, view 1">Paper 1</button>
-          <button class="preset paper-preset" data-view="paper2" type="button" title="Recreated direction of published Figure 1, view 2">Paper 2</button>
-          <button class="preset paper-preset" data-view="paper3" type="button" title="Recreated direction of published Figure 1, view 3">Paper 3</button>
+          <button class="preset paper-preset" data-view="paper1" type="button" title="Figure 1 view 1: recovered +Z projection">Paper 1</button>
+          <button class="preset paper-preset" data-view="paper2" type="button" title="Figure 1 view 2: raster-calibrated oblique recreation (~az 44°, el −4°); exact camera metadata is not published">Paper 2</button>
+          <button class="preset paper-preset" data-view="paper3" type="button" title="Figure 1 view 3: recovered +Y projection with source-image handedness">Paper 3</button>
           <button id="symmetryStep" type="button" title="Apply T(x,y,z)=(y,-x,-z)">T step · 0/4</button>
         </div>
 

@@ -31,11 +31,26 @@ const ui = {
   fitModel: document.getElementById('fitModel')
 };
 
-// Paper-inspired palette. Figure 2 explicitly shows F1 in orange and F3 in green.
+// Palette sampled from the published figures for the six visible reference colors.
+// Figure 2 explicitly identifies F1 as orange and F3 as green.
+// Source-figure color audit:
+// F1/F3 are directly identified by Figure 2. F4/F5/F7/F8 are recovered by
+// matching exact Figure 1 silhouettes across multiple published views.
+// F2/F6 are fallback distinction colors because the published panels do not
+// expose them as dominant flat-color regions.
 const faceColors = [
-  '#d98232', '#6f82bd', '#69b78b', '#b69a55',
-  '#bf4f76', '#4e9697', '#8b6fb3', '#c9664c'
+  '#d37e3e', // F1 orange — direct Figure 2
+  '#8b6fb3', // F2 fallback
+  '#69b885', // F3 green — direct Figure 2
+  '#4b8f8f', // F4 teal — recovered from Figure 1
+  '#6a7cb8', // F5 blue — recovered from Figure 1
+  '#c9664c', // F6 fallback
+  '#ba4f6f', // F7 magenta — recovered from Figure 1
+  '#aa8f52'  // F8 gold — recovered from Figure 1
 ];
+
+let paperReferenceMode = false;
+let paperMirrorX = false;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x07131d);
@@ -52,6 +67,16 @@ const camera = new THREE.PerspectiveCamera(42, 1, EXTENDED_ZOOM.minNear, EXTENDE
 // CAD convention: X/Y define the horizontal plane and Z is vertical.
 camera.up.set(0, 0, 1);
 camera.position.set(8.2, -8.2, 6.6);
+
+function refreshProjectionMatrix() {
+  camera.updateProjectionMatrix();
+  if (paperMirrorX) {
+    camera.projectionMatrix.elements[0] *= -1;
+    camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+  }
+  viewport.dataset.cameraFov = String(camera.fov);
+  viewport.dataset.paperMirrorX = paperMirrorX ? 'true' : 'false';
+}
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -84,12 +109,16 @@ controls.autoRotateSpeed = 1.15;
 
 function updateCameraClipping() {
   const distance = Math.max(EXTENDED_ZOOM.minDistance, camera.position.distanceTo(controls.target));
-  const near = Math.max(EXTENDED_ZOOM.minNear, distance * 0.0001);
-  const far = Math.max(EXTENDED_ZOOM.farFloor, distance * 100);
+  const near = paperReferenceMode
+    ? Math.max(EXTENDED_ZOOM.minNear, distance - 20)
+    : Math.max(EXTENDED_ZOOM.minNear, distance * 0.0001);
+  const far = paperReferenceMode
+    ? distance + 20
+    : Math.max(EXTENDED_ZOOM.farFloor, distance * 100);
 
-  // Keep the shape visible across the extended zoom range instead of letting
-  // the decorative fog completely swallow it at very large camera distances.
-  scene.fog.density = Math.min(0.025, 0.6 / distance);
+  // Keep the shape visible across the extended zoom range. Published-reference
+  // views intentionally disable fog so silhouette/color comparisons stay clean.
+  scene.fog.density = paperReferenceMode ? 0 : Math.min(0.025, 0.6 / distance);
 
   // Publish camera metrics to the DOM for reproducible browser-level audits.
   viewport.dataset.cameraDistance = String(distance);
@@ -99,7 +128,7 @@ function updateCameraClipping() {
   if (Math.abs(camera.near - near) > near * 0.001 || Math.abs(camera.far - far) > far * 0.001) {
     camera.near = near;
     camera.far = far;
-    camera.updateProjectionMatrix();
+    refreshProjectionMatrix();
   }
 }
 
@@ -293,19 +322,47 @@ function setCameraPose(position, up) {
   controls.update();
 }
 
+function setPaperReferenceMode(enabled) {
+  paperReferenceMode = enabled;
+  viewport.classList.toggle('paper-reference-mode', enabled);
+  viewport.dataset.paperReference = enabled ? 'true' : 'false';
+
+  camera.fov = enabled ? 12 : 42;
+  refreshProjectionMatrix();
+
+  scene.background.set(enabled ? 0xffffff : 0x07131d);
+  scene.fog.color.set(enabled ? 0xffffff : 0x07131d);
+  renderer.toneMapping = enabled ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = enabled ? 1 : 1.12;
+  renderer.shadowMap.enabled = !enabled;
+
+  updateFaceAppearance();
+  updateCameraClipping();
+}
+
 function cameraPreset(name) {
   const d = 12.6;
+  const isPaper = name.startsWith('paper');
+
+  // Figure 1 source raster uses the opposite horizontal handedness for views
+  // 2 and 3 relative to the raw Three.js camera projection. Mirror only the
+  // projection (not the model coordinates) for reference-image comparison.
+  paperMirrorX = name === 'paper2' || name === 'paper3';
+  setPaperReferenceMode(isPaper);
 
   // CAD semantics: front = X/Z projection, right = Y/Z projection, top = X/Y projection.
   if (name === 'front') setCameraPose([0, -d, 0], [0, 0, 1]);
   else if (name === 'right') setCameraPose([d, 0, 0], [0, 0, 1]);
   else if (name === 'top') setCameraPose([0, 0, d], [0, 1, 0]);
 
-  // Figure 1 contains representative, not canonical, camera directions.
-  // These three directions are recreated/calibrated from those published views.
-  else if (name === 'paper1') setCameraPose([0, 0, 18], [0, 1, 0]);
-  else if (name === 'paper2') setCameraPose([11.5, -13.5, 10.5], [0, 0, 1]);
-  else if (name === 'paper3') setCameraPose([18, 0, 0], [0, 0, 1]);
+  // Figure 1 view 1 is recovered as the +Z projection.
+  // Figure 1 view 3 is recovered as the +Y projection, horizontally mirrored.
+  // View 2 is a calibrated oblique direction near azimuth 44°, elevation -4°;
+  // the paper does not publish exact camera metadata, so it is not claimed
+  // to be pixel-identical.
+  else if (name === 'paper1') setCameraPose([0, 0, 60], [0, 1, 0]);
+  else if (name === 'paper2') setCameraPose([43.0553, 41.5780, -4.1854], [0, 0, 1]);
+  else if (name === 'paper3') setCameraPose([0, 60, 0], [0, 0, 1]);
   else setCameraPose([8.2, -8.2, 6.6], [0, 0, 1]);
 
   viewport.dataset.viewPreset = name;
@@ -342,9 +399,20 @@ function updateFaceAppearance() {
     mesh.material.opacity = effectiveOpacity;
     mesh.material.transparent = effectiveOpacity < 0.999;
     mesh.material.depthWrite = effectiveOpacity >= 0.999;
+
+    if (paperReferenceMode) {
+      // Unlit flat-color rendering makes visual comparison with the paper's
+      // representative figures meaningful instead of lighting-dependent.
+      mesh.material.color.set(0x000000);
+      mesh.material.emissive.set(faceColors[index]);
+      mesh.material.emissiveIntensity = 1;
+    } else {
+      mesh.material.color.set(faceColors[index]);
+      mesh.material.emissive.set(isSelected ? faceColors[index] : 0x000000);
+      mesh.material.emissiveIntensity = isSelected ? 0.12 : 0;
+    }
+
     mesh.material.needsUpdate = true;
-    mesh.material.emissive.set(isSelected ? faceColors[index] : 0x000000);
-    mesh.material.emissiveIntensity = isSelected ? 0.12 : 0;
   });
 
   document.querySelectorAll('.face-chip').forEach((button) => {
@@ -535,7 +603,7 @@ function resize() {
   const width = viewport.clientWidth;
   const height = viewport.clientHeight;
   camera.aspect = width / height;
-  camera.updateProjectionMatrix();
+  refreshProjectionMatrix();
   renderer.setSize(width, height, false);
   labelRenderer.setSize(width, height);
 }
