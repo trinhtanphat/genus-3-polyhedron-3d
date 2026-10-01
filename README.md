@@ -23,9 +23,15 @@ The published surface is an equivelar polyhedron of type `{9,3}`:
 
 The viewer uses the exact 24 integer coordinates, exact eight face walks, exact plane equations, and exact adjacency multiplicity matrix from the preprint. Triangles exist only as a GPU rendering detail after each planar nonagon is projected to 2D and triangulated; they do not change the mathematical boundary/incidence data.
 
+## What the app is for
+
+This is an interactive scientific visualization and verification companion for the exact genus-3 polyhedron realization published in the cited preprint. It lets a reader inspect the shape spatially, inspect the published exact certificate, and reproduce key combinatorial/geometric checks. It is not a CAD editor and not an artist's approximation.
+
 ## Viewer features
 
-- Orbit, zoom, reset, isometric/front/top/side camera presets
+- Orbit and pan, plus extended-range zoom from extreme close-up to a very distant overview
+- Dedicated Zoom + / Zoom − / Fit controls, plus wheel and touch-pinch zoom
+- Reset and isometric/front/top/side camera presets
 - Individual face colors with exact face metadata
 - Clickable vertices with exact integer coordinates and incident faces
 - Toggle faces, edges, vertices, and vertex labels
