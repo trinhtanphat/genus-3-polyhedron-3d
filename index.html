@@ -5,13 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Interactive 3D visualization of Ruslan Mizhaev's genus-3 equivelar octahedron from exact integer coordinates." />
   <meta name="theme-color" content="#071019" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests" />
+  <link rel="icon" href="data:," />
   <title>Genus-3 Polyhedron · Interactive 3D</title>
   <link rel="stylesheet" href="./styles.css" />
   <script type="importmap">
   {
     "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+      "three": "./vendor/three.module.min.js",
+      "three/addons/": "./vendor/addons/"
     }
   }
   </script>
@@ -103,12 +106,13 @@
         <p class="eyebrow">Exact certificate</p>
         <h2>Not an artist’s approximation</h2>
         <p>This viewer uses the 24 integer-coordinate vertices and eight cyclic nonagonal face walks published in Ruslan Mizhaev’s September 2026 preprint. Each face is triangulated only for GPU rendering; the boundary polygon and incidence structure remain the published ones.</p>
-        <p>The accompanying verifier checks planarity with exact integer arithmetic, reconstructs all 36 undirected edges, confirms every edge belongs to exactly two faces, and confirms three faces/edges meet at every vertex.</p>
+        <p>The accompanying verifiers check exact planarity and incidence, reconstruct all 36 undirected edges, confirm orientability and genus, and independently test that all 28 face pairs intersect only in their prescribed shared edge set.</p>
+        <p class="small-note"><strong>Source discrepancy:</strong> the primary arXiv preprint states 36 edges; the September 29, 2026 Popular Science article says 26. This viewer follows the primary coordinate certificate and independently reconstructs 36 unique edges.</p>
       </div>
       <div class="source-links">
-        <a href="https://arxiv.org/abs/2609.17700" target="_blank" rel="noreferrer">arXiv 2609.17700 ↗</a>
-        <a href="https://www.popsci.com/science/new-geometry-shape-polyhedron/" target="_blank" rel="noreferrer">Popular Science ↗</a>
-        <a href="https://github.com/trinhtanphat/genus-3-polyhedron-3d" target="_blank" rel="noreferrer">Source on GitHub ↗</a>
+        <a href="https://arxiv.org/abs/2609.17700" target="_blank" rel="noopener noreferrer">arXiv 2609.17700 ↗</a>
+        <a href="https://www.popsci.com/science/new-geometry-shape-polyhedron/" target="_blank" rel="noopener noreferrer">Popular Science ↗</a>
+        <a href="https://github.com/trinhtanphat/genus-3-polyhedron-3d" target="_blank" rel="noopener noreferrer">Source on GitHub ↗</a>
       </div>
     </section>
 

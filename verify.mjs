@@ -86,6 +86,35 @@ for (let i = 0; i < F; i++) {
 assert.equal(onePairs, 20, 'expected 20 face pairs sharing one edge');
 assert.equal(twoPairs, 8, 'expected 8 face pairs sharing two edges');
 
+// Verify the compatible face orientation assignment published in the preprint:
+// (F1,...,F8) = (+,+,-,-,-,-,+,+).
+const orientationSigns = new Map([
+  ['F1', 1], ['F2', 1], ['F3', -1], ['F4', -1],
+  ['F5', -1], ['F6', -1], ['F7', 1], ['F8', 1]
+]);
+const orientedEdges = new Map();
+
+for (const face of faces) {
+  const sign = orientationSigns.get(face.id);
+  assert.ok(sign === 1 || sign === -1, `missing orientation sign for ${face.id}`);
+  const walk = sign === 1 ? face.walk : [...face.walk].reverse();
+
+  for (let i = 0; i < walk.length; i++) {
+    const u = walk[i];
+    const v = walk[(i + 1) % walk.length];
+    const key = edgeKey(u, v);
+    if (!orientedEdges.has(key)) orientedEdges.set(key, []);
+    orientedEdges.get(key).push([u, v, face.id]);
+  }
+}
+
+for (const [edge, occurrences] of orientedEdges) {
+  assert.equal(occurrences.length, 2, `${edge} must have two oriented occurrences`);
+  const [first, second] = occurrences;
+  assert.equal(first[0], second[1], `${edge}: compatible orientation must reverse shared edge`);
+  assert.equal(first[1], second[0], `${edge}: compatible orientation must reverse shared edge`);
+}
+
 function T([x, y, z]) {
   return [y, -x, -z];
 }
@@ -102,10 +131,44 @@ for (const [id, xyz] of Object.entries(vertices)) {
   assert.ok(coordToId.has(image.join(',')), `T must map vertex ${id} into the vertex set`);
 }
 
+function cyclicEquivalent(a, b) {
+  if (a.length !== b.length) return false;
+  for (const candidate of [b, [...b].reverse()]) {
+    for (let shift = 0; shift < candidate.length; shift++) {
+      if (a.every((value, i) => value === candidate[(i + shift) % candidate.length])) return true;
+    }
+  }
+  return false;
+}
+
+const expectedFaceImage = new Map([
+  ['F1', 'F7'], ['F7', 'F2'], ['F2', 'F8'], ['F8', 'F1'],
+  ['F3', 'F6'], ['F6', 'F4'], ['F4', 'F5'], ['F5', 'F3']
+]);
+const faceById = new Map(faces.map((face) => [face.id, face]));
+
+for (const face of faces) {
+  const transformedWalk = face.walk.map((id) => {
+    const image = T(vertices[String(id)]);
+    const imageId = coordToId.get(image.join(','));
+    assert.ok(imageId, `T image of vertex ${id} missing`);
+    return imageId;
+  });
+
+  const targetId = expectedFaceImage.get(face.id);
+  assert.ok(targetId, `missing expected face image for ${face.id}`);
+  const target = faceById.get(targetId);
+  assert.ok(
+    cyclicEquivalent(transformedWalk, target.walk),
+    `T must send ${face.id} boundary walk to ${targetId}`
+  );
+}
+
 console.log('✓ exact planarity: 72/72 face-vertex incidences');
 console.log('✓ topology: 24 vertices, 36 edges, 8 nonagonal faces');
 console.log('✓ manifold incidence: 2 faces per edge, degree 3 at every vertex');
+console.log('✓ orientability: published (+,+,-,-,-,-,+,+) orientation reverses every shared edge');
 console.log('✓ Euler characteristic χ = -4, hence genus g = 3');
 console.log('✓ complete face adjacency: 20 single-edge pairs + 8 double-edge pairs');
-console.log('✓ C4 generator T preserves the vertex set and satisfies T^4 = identity');
-console.log('All exact checks passed.');
+console.log('✓ C4 generator T preserves vertices, maps faces through the published cycles, and satisfies T^4 = identity');
+console.log('All exact combinatorial/algebraic checks passed.');
