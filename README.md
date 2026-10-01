@@ -31,7 +31,8 @@ This is an interactive scientific visualization and verification companion for t
 
 - Orbit and pan, plus extended-range zoom from extreme close-up to a very distant overview
 - Dedicated Zoom + / Zoom − / Fit controls, plus wheel and touch-pinch zoom
-- Reset and isometric/front/top/side camera presets
+- Reset plus CAD-style isometric/front/top/right presets (Z-up), and Paper 1/2/3 recreated reference directions based on published Figure 1
+- Opaque faces by default; transparency remains optional and uses safer depth handling
 - Individual face colors with exact face metadata
 - Clickable vertices with exact integer coordinates and incident faces
 - Toggle faces, edges, vertices, and vertex labels
