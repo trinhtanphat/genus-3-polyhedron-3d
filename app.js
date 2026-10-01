@@ -109,8 +109,12 @@ controls.autoRotateSpeed = 1.15;
 
 function updateCameraClipping() {
   const distance = Math.max(EXTENDED_ZOOM.minDistance, camera.position.distanceTo(controls.target));
-  const near = Math.max(EXTENDED_ZOOM.minNear, distance * 0.0001);
-  const far = Math.max(EXTENDED_ZOOM.farFloor, distance * 100);
+  const near = paperReferenceMode
+    ? Math.max(EXTENDED_ZOOM.minNear, distance - 20)
+    : Math.max(EXTENDED_ZOOM.minNear, distance * 0.0001);
+  const far = paperReferenceMode
+    ? distance + 20
+    : Math.max(EXTENDED_ZOOM.farFloor, distance * 100);
 
   // Keep the shape visible across the extended zoom range. Published-reference
   // views intentionally disable fog so silhouette/color comparisons stay clean.
@@ -353,11 +357,11 @@ function cameraPreset(name) {
 
   // Figure 1 view 1 is recovered as the +Z projection.
   // Figure 1 view 3 is recovered as the +Y projection, horizontally mirrored.
-  // View 2 is a calibrated oblique direction near azimuth 45°, elevation 0°;
+  // View 2 is a calibrated oblique direction near azimuth 44°, elevation -4°;
   // the paper does not publish exact camera metadata, so it is not claimed
   // to be pixel-identical.
   else if (name === 'paper1') setCameraPose([0, 0, 60], [0, 1, 0]);
-  else if (name === 'paper2') setCameraPose([42.4264, 42.4264, 0], [0, 0, 1]);
+  else if (name === 'paper2') setCameraPose([43.0553, 41.5780, -4.1854], [0, 0, 1]);
   else if (name === 'paper3') setCameraPose([0, 60, 0], [0, 0, 1]);
   else setCameraPose([8.2, -8.2, 6.6], [0, 0, 1]);
 

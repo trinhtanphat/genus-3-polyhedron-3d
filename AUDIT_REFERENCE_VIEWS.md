@@ -2,9 +2,20 @@
 
 ## Primary-source evidence
 
-The authoritative geometry is the coordinate certificate in Ruslan Mizhaev, *Integer Realization of an Equivelar Octahedron of Genus 3* (arXiv:2609.17700). The paper states that the data can be reproduced directly in computer algebra or CAD software. Its Figure 1 contains three representative views, while Figure 2 shows planar representatives of F3 and F1.
+The authoritative geometry is the coordinate certificate in Ruslan Mizhaev, *Integer Realization of an Equivelar Octahedron of Genus 3* (arXiv:2609.17700). The paper states that the data can be reproduced directly in computer algebra or CAD software. Its Figure 1 contains three representative views, while Figure 2 contains planar representatives of the two face orbits. A direct search of the supplied LaTeX source finds no camera, azimuth, elevation, perspective/orthographic, or CAD-program metadata.
 
 The repository's `data.json` already matches all 24 published integer coordinates, all eight cyclic face walks, all eight supporting-plane equations, the adjacency multiplicity matrix, and the C4 generator. The exact geometry was therefore not replaced in this audit.
+
+
+### Audited arXiv-source files
+
+The local arXiv source used for this audit was not committed to the repository. SHA-256 fingerprints:
+
+- `main.tex`: `0e8c300e6627511f619ea4bb8d47e60ea05e38110303c1c43975b13964dc2265`
+- `figure1.png`: `ea4334737d2a45e9aa380016ded966ca9d52e1e213bb7ed447f72ca00231c428`
+- `figure2.png`: `1a5b33779bb306060a064dc383c78d89e61a7e7853c81ec3a009f94fe70faf9c`
+
+Raster sampling confirms the dominant Figure 2 colors are green RGB `(105,184,133)` (`#69b885`) and orange RGB `(211,126,62)` (`#d37e3e`). Figure 1 additionally uses dominant teal `#4b8f8f`, gold `#aa8f52`, magenta `#ba4f6f`, and blue `#6a7cb8`.
 
 ## What looked different
 
@@ -20,7 +31,8 @@ This audit changes presentation, not the mathematical realization:
 - Vertices and labels are off by default.
 - Transparency remains available; depth writes are disabled automatically for transparent faces to reduce misleading occlusion artifacts.
 - F1 is orange and F3 is green, matching the explicit colors in published Figure 2.
-- Paper 1 / Paper 2 / Paper 3 provide recreated/calibrated directions based on published Figure 1. Exact camera metadata is not published, so these are not claimed to be pixel-identical.
+- Paper 1 / Paper 2 / Paper 3 provide paper-reference recreations. They switch to white background, flat source-sampled colors, no fog/tone mapping, and a narrow perspective to approximate the publication look. Exact camera metadata is not published, so they are explicitly not claimed to be pixel-identical.
+- A fine grid search for Figure 1 view 2 over the sampled oblique neighborhood found the best tested raster-label score at approximately azimuth `44°`, elevation `-4°`, with horizontal mirroring; that direction is now used.
 
 ## Verification
 

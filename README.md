@@ -31,7 +31,8 @@ This is an interactive scientific visualization and verification companion for t
 
 - Orbit and pan, plus extended-range zoom from extreme close-up to a very distant overview
 - Dedicated Zoom + / Zoom − / Fit controls, plus wheel and touch-pinch zoom
-- Reset plus CAD-style isometric/front/top/right presets (Z-up), and Paper 1/2/3 recreated reference directions based on published Figure 1
+- Reset plus CAD-style isometric/front/top/right presets (Z-up), and Paper 1/2/3 paper-reference recreations based on published Figure 1
+- Paper-reference mode switches to white background, narrow-perspective/near-orthographic viewing, flat source-sampled colors, no fog and no tone mapping for cleaner visual comparison
 - Opaque faces by default; transparency remains optional and uses safer depth handling
 - Individual face colors with exact face metadata
 - Clickable vertices with exact integer coordinates and incident faces
@@ -60,6 +61,16 @@ A source-raster audit of the original arXiv figures found:
 See [AUDIT_REFERENCE_VIEWS.md](./AUDIT_REFERENCE_VIEWS.md) for the evidence boundary and the deeper reference-view audit.
 
 The 2026 preprint describes this as an integer-coordinate realization based on an earlier construction; this repository therefore does not claim the abstract structure was first conceived in 2026. A different 2026 eight-faced genus-3 example by Röst and Vígh has the same face/edge counts but is explicitly not combinatorially equivalent to Mizhaev's example.
+
+## Published-figure audit boundary
+
+The arXiv LaTeX source includes `figure1.png` with the caption “Representative views of the integer realization” and `figure2.png` with the caption “Planar representatives of the two face orbits.” It does **not** contain camera, azimuth, elevation, perspective/orthographic, or CAD-program metadata. Therefore the exact mathematical realization can be reproduced from coordinates/face walks, but a pixel-identical recovery of the author's three Figure 1 cameras is not justified by the published source.
+
+For reference rendering, this project samples the source raster palette. Figure 2's dominant green is RGB `(105,184,133)` / `#69b885`; the dominant orange is RGB `(211,126,62)` / `#d37e3e`. The other Figure 1 source colors used for the paper-style palette include teal `#4b8f8f`, gold `#aa8f52`, magenta `#ba4f6f`, and blue `#6a7cb8`.
+
+A fine raster-comparison sweep for Figure 1 view 2 found its best tested match near azimuth `44°`, elevation `-4°`, with horizontal mirroring; the viewer uses that calibrated direction. This remains a reconstruction rather than recovered camera metadata.
+
+See `AUDIT_REFERENCE_VIEWS.md` for the primary-source hashes and audit details.
 
 ## Exact verification
 
