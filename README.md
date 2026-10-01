@@ -1,5 +1,7 @@
 # Genus-3 Equivelar Octahedron — Interactive 3D
 
+**Live demo:** https://trinhtanphat.github.io/genus-3-polyhedron-3d/
+
 Interactive browser visualization of the exact integer-coordinate realization published by **Ruslan Mizhaev** in the September 2026 preprint **“Integer Realization of an Equivelar Octahedron of Genus 3”** (arXiv:2609.17700).
 
 This repository is an independent educational visualization built from the published mathematical data. It is not affiliated with the paper's author.
