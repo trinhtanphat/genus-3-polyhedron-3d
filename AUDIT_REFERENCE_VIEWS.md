@@ -39,3 +39,46 @@ Browser regression testing on the 181 machine also passes after the presentation
 ## Conclusion
 
 The source-coordinate geometry was not found to be wrong. The main discrepancy was presentation/orientation relative to CAD and the paper's representative views. The viewer was adjusted so the first impression now follows CAD Z-up semantics and opaque reference-style faces, while preserving the exact published realization.
+
+
+## Deeper source-image audit (October 1, 2026)
+
+A second presentation audit was run against the original raster figures extracted from the arXiv source package, without adding those copyrighted figures to this repository.
+
+The three-panel Figure 1 source raster is 2400×840. Its dominant flat colors are:
+- teal #4b8f8f
+- green #69b885
+- gold #aa8f52
+- magenta #ba4f6f
+- blue #6a7cb8
+- orange #d37e3e
+
+Figure 2 directly identifies F1 as orange and F3 as green. Cross-view silhouette/color matching across Figure 1 then recovers:
+- F4 = teal
+- F5 = blue
+- F7 = magenta
+- F8 = gold
+
+F2 and F6 are not exposed as dominant flat-color regions in the published reference panels, so the viewer deliberately keeps distinguishable fallback colors for those two faces instead of claiming unsupported source-exact colors.
+
+### Reference directions
+
+The source-image audit also corrected the earlier reference-camera guesses:
+
+- **Paper 1**: recovered as the +Z projection.
+- **Paper 3**: recovered as the +Y projection. The published raster has opposite horizontal handedness relative to the raw Three.js projection, so the viewer mirrors the projection only; model coordinates are never mirrored or changed.
+- **Paper 2**: the paper does not publish camera metadata. A reproducible grid search against the source raster places the best calibrated recreation near azimuth 45°, elevation 0°. The viewer therefore labels it as a calibrated recreation, not an exact hidden camera parameter.
+
+Paper-reference mode uses a white background, no fog, no lighting-dependent face shading, a narrow 12° FOV at long camera distance, and flat source-audited colors. Normal interactive mode remains perspective/CAD-style and visually richer.
+
+## Historical and identification checks
+
+The 2026 preprint itself says the construction is based on an earlier construction and preserves its incidence structure. Therefore this repository describes the 2026 work as an exact integer-coordinate **realization/certificate**, not as proof that the abstract structure originated in 2026.
+
+A separate September 2026 paper by Gergely Röst and Viktor Vígh gives another eight-faced genus-3 polyhedron with the same counts and edge multiplicities, but explicitly says it is not combinatorially equivalent to Mizhaev's example and has D2 rather than Mizhaev's rotoreflection symmetry. Images of that second object should not be used as a visual reference for this repository.
+
+## Meaning of "100%"
+
+For the published coordinate certificate, the repository uses exact arithmetic and exhaustively verifies the stated combinatorial/topological properties. For presentation, the source-image audit now reproduces the recoverable axis directions, handedness and visible source colors.
+
+The one intentional uncertainty is **Paper 2's exact camera metadata**, because no exact camera position/projection settings are published in the paper. Claiming a pixel-identical hidden camera would go beyond the available evidence. The viewer therefore says "calibrated recreation" explicitly.
