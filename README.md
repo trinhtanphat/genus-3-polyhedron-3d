@@ -74,11 +74,23 @@ See `AUDIT_REFERENCE_VIEWS.md` for the primary-source hashes and audit details.
 
 ## Exact verification
 
-Run both dependency-free verifiers:
+For the complete repository audit on Windows PowerShell:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\audit_all.ps1
+```
+
+The full audit runs the exact topology and pairwise-geometry checks, the presentation contract, the actual vendored Three.js triangulation check, web/runtime-integrity checks, JavaScript syntax, `git diff --check`, the no-GitHub-Actions guard, and a basic tracked-secret pattern scan. See [AUDIT_STATUS.md](./AUDIT_STATUS.md) for the latest gate summary.
+
+Individual dependency-free verifiers can also be run directly:
 
 ```bash
 node verify.mjs
 python verify_geometry.py
+python verify_source.py   # optional: runs when ignored arXiv source files are present locally
+node verify_presentation.mjs
+node verify_render.mjs
+node verify_web.mjs
 ```
 
 `verify.mjs` checks the exact combinatorial/algebraic certificate:
