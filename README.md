@@ -39,13 +39,14 @@ The viewer uses the exact 24 integer coordinates, exact eight face walks, exact 
 
 ## Exact verification
 
-Run:
+Run both dependency-free verifiers:
 
 ```bash
 node verify.mjs
+python verify_geometry.py
 ```
 
-The verifier checks with integer arithmetic:
+`verify.mjs` checks the exact combinatorial/algebraic certificate:
 
 1. 24 vertices and 8 faces
 2. every face has exactly 9 vertices
@@ -53,10 +54,13 @@ The verifier checks with integer arithmetic:
 4. 36 unique undirected edges
 5. every edge belongs to exactly 2 faces
 6. every vertex has degree 3 and belongs to 3 faces
-7. `χ = -4` and `g = 3`
-8. the face adjacency multiplicity matrix matches the paper
-9. all 28 face pairs are adjacent: 20 once and 8 twice
-10. `T` preserves the vertex set and `T^4 = id`
+7. the published orientation assignment `(+,+,-,-,-,-,+,+)` reverses every shared edge, establishing orientability
+8. `χ = -4` and `g = 3`
+9. the face adjacency multiplicity matrix matches the published matrix
+10. all 28 face pairs are adjacent: 20 once and 8 twice
+11. `T(x,y,z)=(y,-x,-z)` preserves the vertex set, maps faces through the published two 4-cycles, and satisfies `T^4 = id`
+
+`verify_geometry.py` uses Python's exact `Fraction` arithmetic to independently check that all eight projected face boundaries are simple polygons and that every one of the 28 face pairs intersects **only** in the prescribed shared edge set, with no extra crossing interval or isolated contact.
 
 ## Run locally
 
@@ -70,7 +74,7 @@ python -m http.server 8080
 
 Then open `http://localhost:8080/`.
 
-No npm install or build step is required. Three.js is loaded from jsDelivr.
+No npm install or build step is required. The exact Three.js r181 runtime files used by the viewer are vendored under `vendor/` with their upstream MIT license, so the deployed viewer has no runtime CDN dependency.
 
 ## GitHub Pages without GitHub Actions
 
@@ -94,7 +98,11 @@ The site can also be enabled with the GitHub API using the legacy branch source.
 - Popular Science coverage, September 29, 2026  
   https://www.popsci.com/science/new-geometry-shape-polyhedron/
 
-The mathematical coordinate and incidence facts are attributed to the original preprint. All website code in this repository is independently written.
+### Source discrepancy: 36 edges vs. 26
+
+The primary arXiv preprint states **36 edges**, and the exact face walks in the coordinate certificate reconstruct 36 unique undirected edges. The Popular Science headline/body currently says **26 edges**. This project follows the primary preprint and independently verifies the 36-edge count.
+
+The mathematical coordinate and incidence facts are attributed to the original preprint. All website code in this repository is independently written. See `NOTICE.md` for the source-data attribution boundary.
 
 ## License
 
