@@ -44,6 +44,23 @@ This is an interactive scientific visualization and verification companion for t
 - Responsive layout for desktop and mobile
 - Static/no-build deployment suitable for GitHub Pages
 
+## Published-reference mode
+
+The normal viewer uses CAD-style Z-up perspective controls. The **Paper 1 / Paper 2 / Paper 3** presets switch to a separate comparison presentation: white background, flat unlit face colors, no fog, long camera distance and narrow FOV.
+
+A source-raster audit of the original arXiv figures found:
+
+- Paper 1: recovered +Z projection.
+- Paper 3: recovered +Y projection with horizontal source-image handedness correction.
+- Paper 2: calibrated near azimuth 45°, elevation 0°. Exact camera metadata is not published, so this is explicitly a calibrated recreation rather than a pixel-identical camera claim.
+- Figure 2 directly identifies F1 orange and F3 green.
+- Cross-view matching in Figure 1 recovers F4 teal, F5 blue, F7 magenta and F8 gold.
+- F2/F6 remain deliberate fallback colors because the published panels do not expose them as dominant flat-color fields.
+
+See [AUDIT_REFERENCE_VIEWS.md](./AUDIT_REFERENCE_VIEWS.md) for the evidence boundary and the deeper reference-view audit.
+
+The 2026 preprint describes this as an integer-coordinate realization based on an earlier construction; this repository therefore does not claim the abstract structure was first conceived in 2026. A different 2026 eight-faced genus-3 example by Röst and Vígh has the same face/edge counts but is explicitly not combinatorially equivalent to Mizhaev's example.
+
 ## Exact verification
 
 Run both dependency-free verifiers:
