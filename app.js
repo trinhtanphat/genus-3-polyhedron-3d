@@ -33,12 +33,24 @@ const ui = {
 
 // Palette sampled from the published figures for the six visible reference colors.
 // Figure 2 explicitly identifies F1 as orange and F3 as green.
+// Source-figure color audit:
+// F1/F3 are directly identified by Figure 2. F4/F5/F7/F8 are recovered by
+// matching exact Figure 1 silhouettes across multiple published views.
+// F2/F6 are fallback distinction colors because the published panels do not
+// expose them as dominant flat-color regions.
 const faceColors = [
-  '#d37e3e', '#6a7cb8', '#69b885', '#aa8f52',
-  '#ba4f6f', '#4b8f8f', '#8b6fb3', '#c9664c'
+  '#d37e3e', // F1 orange — direct Figure 2
+  '#8b6fb3', // F2 fallback
+  '#69b885', // F3 green — direct Figure 2
+  '#4b8f8f', // F4 teal — recovered from Figure 1
+  '#6a7cb8', // F5 blue — recovered from Figure 1
+  '#c9664c', // F6 fallback
+  '#ba4f6f', // F7 magenta — recovered from Figure 1
+  '#aa8f52'  // F8 gold — recovered from Figure 1
 ];
 
 let paperReferenceMode = false;
+let paperMirrorX = false;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x07131d);
@@ -55,6 +67,16 @@ const camera = new THREE.PerspectiveCamera(42, 1, EXTENDED_ZOOM.minNear, EXTENDE
 // CAD convention: X/Y define the horizontal plane and Z is vertical.
 camera.up.set(0, 0, 1);
 camera.position.set(8.2, -8.2, 6.6);
+
+function refreshProjectionMatrix() {
+  camera.updateProjectionMatrix();
+  if (paperMirrorX) {
+    camera.projectionMatrix.elements[0] *= -1;
+    camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+  }
+  viewport.dataset.cameraFov = String(camera.fov);
+  viewport.dataset.paperMirrorX = paperMirrorX ? 'true' : 'false';
+}
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -102,7 +124,7 @@ function updateCameraClipping() {
   if (Math.abs(camera.near - near) > near * 0.001 || Math.abs(camera.far - far) > far * 0.001) {
     camera.near = near;
     camera.far = far;
-    camera.updateProjectionMatrix();
+    refreshProjectionMatrix();
   }
 }
 
@@ -302,7 +324,7 @@ function setPaperReferenceMode(enabled) {
   viewport.dataset.paperReference = enabled ? 'true' : 'false';
 
   camera.fov = enabled ? 12 : 42;
-  camera.updateProjectionMatrix();
+  refreshProjectionMatrix();
 
   scene.background.set(enabled ? 0xffffff : 0x07131d);
   scene.fog.color.set(enabled ? 0xffffff : 0x07131d);
@@ -317,6 +339,11 @@ function setPaperReferenceMode(enabled) {
 function cameraPreset(name) {
   const d = 12.6;
   const isPaper = name.startsWith('paper');
+
+  // Figure 1 source raster uses the opposite horizontal handedness for views
+  // 2 and 3 relative to the raw Three.js camera projection. Mirror only the
+  // projection (not the model coordinates) for reference-image comparison.
+  paperMirrorX = name === 'paper2' || name === 'paper3';
   setPaperReferenceMode(isPaper);
 
   // CAD semantics: front = X/Z projection, right = Y/Z projection, top = X/Y projection.
@@ -324,13 +351,14 @@ function cameraPreset(name) {
   else if (name === 'right') setCameraPose([d, 0, 0], [0, 0, 1]);
   else if (name === 'top') setCameraPose([0, 0, d], [0, 1, 0]);
 
-  // Figure 1 view 1 is the +Z projection; view 3 is the -Y/front projection.
-  // A long camera distance + narrow FOV approximates the paper's flat projection.
-  // View 2 remains a calibrated oblique recreation because exact camera metadata
-  // is not part of the published certificate.
+  // Figure 1 view 1 is recovered as the +Z projection.
+  // Figure 1 view 3 is recovered as the +Y projection, horizontally mirrored.
+  // View 2 is a calibrated oblique direction near azimuth 45°, elevation 0°;
+  // the paper does not publish exact camera metadata, so it is not claimed
+  // to be pixel-identical.
   else if (name === 'paper1') setCameraPose([0, 0, 60], [0, 1, 0]);
-  else if (name === 'paper2') setCameraPose([32.8, -38.5, 29.9], [0, 0, 1]);
-  else if (name === 'paper3') setCameraPose([0, -60, 0], [0, 0, 1]);
+  else if (name === 'paper2') setCameraPose([42.4264, 42.4264, 0], [0, 0, 1]);
+  else if (name === 'paper3') setCameraPose([0, 60, 0], [0, 0, 1]);
   else setCameraPose([8.2, -8.2, 6.6], [0, 0, 1]);
 
   viewport.dataset.viewPreset = name;
@@ -571,7 +599,7 @@ function resize() {
   const width = viewport.clientWidth;
   const height = viewport.clientHeight;
   camera.aspect = width / height;
-  camera.updateProjectionMatrix();
+  refreshProjectionMatrix();
   renderer.setSize(width, height, false);
   labelRenderer.setSize(width, height);
 }
