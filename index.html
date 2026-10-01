@@ -26,10 +26,10 @@
     <div>
       <p class="eyebrow">Exact-coordinate interactive model</p>
       <h1>Genus-3 Equivelar Octahedron</h1>
-      <p class="lede">8 planar nonagons · 24 vertices · 36 edges · three handles · every pair of faces adjacent</p>
+      <p class="lede">8 planar nonagons · 24 vertices · 36 edges · three handles · every pair of faces adjacent · CAD convention: Z is up</p>
     </div>
     <div class="header-badges" aria-label="Key invariants">
-      <span>{9,3}</span><span>χ = −4</span><span>g = 3</span><span>C₄</span>
+      <span>{9,3}</span><span>χ = −4</span><span>g = 3</span><span>C₄</span><span>CAD Z ↑</span>
     </div>
   </header>
 
@@ -48,6 +48,20 @@
       </div>
     </section>
 
+    <section class="info-card full-width reference-note" aria-labelledby="referenceViewTitle">
+      <div class="info-copy">
+        <p class="eyebrow">CAD orientation · Published reference views</p>
+        <h2 id="referenceViewTitle">Why the exact same polyhedron can look “wrong” from another angle</h2>
+        <p><strong>Tiếng Việt:</strong> Hình học không đổi: 24 tọa độ nguyên và 8 face-walk quyết định chính xác bề mặt. Điểm khác trước đây chủ yếu là cách trình bày: viewer dùng trục đứng kiểu Three.js/Y-up, camera phối cảnh và mặt bán trong suốt, trong khi tác giả mô tả khả năng tái dựng bằng CAD và các hình trong bài là những góc nhìn đại diện. Bản này dùng quy ước CAD <strong>Z-up</strong>, mặt mặc định đục 100%, và có ba nút <strong>Paper 1–3</strong> để tái tạo các hướng nhìn của Figure 1 gần nhất có thể.</p>
+        <p><strong>English:</strong> The coordinates and face walks define the exact surface; camera orientation does not. This viewer now uses CAD-style Z-up views and opaque faces by default. “Paper 1–3” are calibrated/recreated directions from the published Figure 1, not a claim of pixel-identical camera metadata.</p>
+        <p class="small-note">Figure 2 of the paper explicitly shows F1 as orange and F3 as green; the viewer follows those two source colors and uses a paper-inspired palette for the remaining faces.</p>
+      </div>
+      <div class="source-links">
+        <a href="https://arxiv.org/pdf/2609.17700#page=3" target="_blank" rel="noopener noreferrer">Published Figure 1 ↗</a>
+        <a href="https://arxiv.org/pdf/2609.17700#page=4" target="_blank" rel="noopener noreferrer">Published Figure 2 ↗</a>
+      </div>
+    </section>
+
     <section class="viewer-card" aria-label="Interactive 3D viewer">
       <div id="viewport" class="viewport">
         <div class="viewer-toolbar" role="toolbar" aria-label="View controls">
@@ -55,14 +69,17 @@
           <button id="fitModel" type="button" title="Fit the model back into a comfortable overview">Fit</button>
           <button id="zoomIn" type="button" title="Zoom in strongly; wheel/pinch allows continuous extreme zoom">Zoom +</button>
           <button id="zoomOut" type="button" title="Zoom out strongly; wheel/pinch allows continuous extreme zoom">Zoom −</button>
-          <button class="preset" data-view="iso" type="button">Iso</button>
-          <button class="preset" data-view="front" type="button">Front</button>
-          <button class="preset" data-view="top" type="button">Top</button>
-          <button class="preset" data-view="side" type="button">Side</button>
+          <button class="preset" data-view="iso" type="button" title="CAD isometric, Z-up">Iso</button>
+          <button class="preset" data-view="front" type="button" title="CAD front: look along Y, show X-Z">Front</button>
+          <button class="preset" data-view="top" type="button" title="CAD top: look along Z, show X-Y">Top</button>
+          <button class="preset" data-view="right" type="button" title="CAD right: look along X, show Y-Z">Right</button>
+          <button class="preset paper-preset" data-view="paper1" type="button" title="Recreated direction of published Figure 1, view 1">Paper 1</button>
+          <button class="preset paper-preset" data-view="paper2" type="button" title="Recreated direction of published Figure 1, view 2">Paper 2</button>
+          <button class="preset paper-preset" data-view="paper3" type="button" title="Recreated direction of published Figure 1, view 3">Paper 3</button>
           <button id="symmetryStep" type="button" title="Apply T(x,y,z)=(y,-x,-z)">T step · 0/4</button>
         </div>
 
-        <div class="viewer-hint">Drag to orbit · wheel/pinch for extended zoom · click a face or vertex</div>
+        <div class="viewer-hint">CAD Z ↑ · drag to orbit · wheel/pinch to zoom · Paper 1–3 recreate published reference directions</div>
 
         <div class="viewer-status" aria-live="polite">
           <span id="hoverStatus">Ready</span>
@@ -74,12 +91,12 @@
         <label class="toggle"><input id="autoRotate" type="checkbox" /> Auto-rotate</label>
         <label class="toggle"><input id="showFaces" type="checkbox" checked /> Faces</label>
         <label class="toggle"><input id="showEdges" type="checkbox" checked /> Edges</label>
-        <label class="toggle"><input id="showVertices" type="checkbox" checked /> Vertices</label>
+        <label class="toggle"><input id="showVertices" type="checkbox" /> Vertices</label>
         <label class="toggle"><input id="showLabels" type="checkbox" /> Labels</label>
         <label class="toggle"><input id="isolateFace" type="checkbox" /> Isolate selected</label>
         <label class="opacity-control">Face opacity
-          <input id="opacity" type="range" min="0.12" max="1" step="0.01" value="0.72" />
-          <output id="opacityValue">72%</output>
+          <input id="opacity" type="range" min="0.12" max="1" step="0.01" value="1" />
+          <output id="opacityValue">100%</output>
         </label>
       </div>
     </section>
