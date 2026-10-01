@@ -59,6 +59,7 @@ python verify_geometry.py
 9. the face adjacency multiplicity matrix matches the published matrix
 10. all 28 face pairs are adjacent: 20 once and 8 twice
 11. `T(x,y,z)=(y,-x,-z)` preserves the vertex set, maps faces through the published two 4-cycles, and satisfies `T^4 = id`
+12. an exhaustive enumeration of all `8! = 40,320` face permutations first finds 8 candidates preserving face-vertex incidence, then exactly 4 that also preserve every cyclic face boundary / edge incidence; those four are precisely the powers of `T`, so the full cell-complex automorphism group — and therefore the geometric symmetry group — is exactly `C4`
 
 `verify_geometry.py` uses Python's exact `Fraction` arithmetic to independently check that all eight projected face boundaries are simple polygons and that every one of the 28 face pairs intersects **only** in the prescribed shared edge set, with no extra crossing interval or isolated contact.
 
