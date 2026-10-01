@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Interactive 3D visualization of Ruslan Mizhaev's genus-3 equivelar octahedron from exact integer coordinates." />
+  <meta name="theme-color" content="#071019" />
+  <title>Genus-3 Polyhedron · Interactive 3D</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <noscript>This visualization requires JavaScript.</noscript>
+
+  <header class="site-header">
+    <div>
+      <p class="eyebrow">Exact-coordinate interactive model</p>
+      <h1>Genus-3 Equivelar Octahedron</h1>
+      <p class="lede">8 planar nonagons · 24 vertices · 36 edges · three handles · every pair of faces adjacent</p>
+    </div>
+    <div class="header-badges" aria-label="Key invariants">
+      <span>{9,3}</span><span>χ = −4</span><span>g = 3</span><span>C₄</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="viewer-card" aria-label="Interactive 3D viewer">
+      <div id="viewport" class="viewport">
+        <div class="viewer-toolbar" role="toolbar" aria-label="View controls">
+          <button id="resetCamera" type="button">Reset</button>
+          <button class="preset" data-view="iso" type="button">Iso</button>
+          <button class="preset" data-view="front" type="button">Front</button>
+          <button class="preset" data-view="top" type="button">Top</button>
+          <button class="preset" data-view="side" type="button">Side</button>
+          <button id="symmetryStep" type="button" title="Apply T(x,y,z)=(y,-x,-z)">T step · 0/4</button>
+        </div>
+
+        <div class="viewer-hint">Drag to orbit · wheel to zoom · click a face or vertex</div>
+
+        <div class="viewer-status" aria-live="polite">
+          <span id="hoverStatus">Ready</span>
+          <span id="fpsStatus">WebGL</span>
+        </div>
+      </div>
+
+      <div class="control-strip">
+        <label class="toggle"><input id="autoRotate" type="checkbox" /> Auto-rotate</label>
+        <label class="toggle"><input id="showFaces" type="checkbox" checked /> Faces</label>
+        <label class="toggle"><input id="showEdges" type="checkbox" checked /> Edges</label>
+        <label class="toggle"><input id="showVertices" type="checkbox" checked /> Vertices</label>
+        <label class="toggle"><input id="showLabels" type="checkbox" /> Labels</label>
+        <label class="toggle"><input id="isolateFace" type="checkbox" /> Isolate selected</label>
+        <label class="opacity-control">Face opacity
+          <input id="opacity" type="range" min="0.12" max="1" step="0.01" value="0.72" />
+          <output id="opacityValue">72%</output>
+        </label>
+      </div>
+    </section>
+
+    <aside class="side-panel">
+      <section class="panel-section">
+        <p class="eyebrow">Selection</p>
+        <div id="selectionPanel" class="selection-panel">
+          <h2>Explore the surface</h2>
+          <p>Select a colored face or a white vertex in the 3D view. Exact coordinates, face walks, and plane equations appear here.</p>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <div class="section-title-row">
+          <div>
+            <p class="eyebrow">Face legend</p>
+            <h2>F₁ … F₈</h2>
+          </div>
+          <button id="showAllFaces" class="text-button" type="button">Show all</button>
+        </div>
+        <div id="faceLegend" class="face-legend" aria-label="Face selection legend"></div>
+      </section>
+
+      <section class="panel-section facts">
+        <p class="eyebrow">Topology</p>
+        <div class="stat-grid">
+          <div><strong>24</strong><span>vertices</span></div>
+          <div><strong>36</strong><span>edges</span></div>
+          <div><strong>8</strong><span>faces</span></div>
+          <div><strong>−4</strong><span>Euler χ</span></div>
+          <div><strong>3</strong><span>genus</span></div>
+          <div><strong>9</strong><span>edges / face</span></div>
+        </div>
+        <p class="formula">χ = V − E + F = 24 − 36 + 8 = −4 = 2 − 2g</p>
+      </section>
+    </aside>
+
+    <section class="info-card full-width">
+      <div class="info-copy">
+        <p class="eyebrow">Exact certificate</p>
+        <h2>Not an artist’s approximation</h2>
+        <p>This viewer uses the 24 integer-coordinate vertices and eight cyclic nonagonal face walks published in Ruslan Mizhaev’s September 2026 preprint. Each face is triangulated only for GPU rendering; the boundary polygon and incidence structure remain the published ones.</p>
+        <p>The accompanying verifier checks planarity with exact integer arithmetic, reconstructs all 36 undirected edges, confirms every edge belongs to exactly two faces, and confirms three faces/edges meet at every vertex.</p>
+      </div>
+      <div class="source-links">
+        <a href="https://arxiv.org/abs/2609.17700" target="_blank" rel="noreferrer">arXiv 2609.17700 ↗</a>
+        <a href="https://www.popsci.com/science/new-geometry-shape-polyhedron/" target="_blank" rel="noreferrer">Popular Science ↗</a>
+        <a href="https://github.com/trinhtanphat/" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </section>
+
+    <section class="matrix-card full-width">
+      <div class="matrix-heading">
+        <div>
+          <p class="eyebrow">Face adjacency</p>
+          <h2>Multiplicity matrix</h2>
+        </div>
+        <p>Every off-diagonal entry is 1 or 2: every pair of faces shares at least one edge. Eight face pairs share two.</p>
+      </div>
+      <div id="matrix" class="matrix-wrap" aria-label="Face adjacency multiplicity matrix"></div>
+    </section>
+
+    <section class="info-card full-width">
+      <div class="info-copy">
+        <p class="eyebrow">Symmetry</p>
+        <h2>T(x,y,z) = (y, −x, −z)</h2>
+        <p>The published realization has a geometric symmetry group isomorphic to C₄. Use <strong>T step</strong> in the viewer to apply the order-four rotoreflection. After four steps the model returns to its original orientation.</p>
+        <p class="small-note">Independent educational visualization based on published mathematical data; not affiliated with the paper’s author.</p>
+      </div>
+      <div class="symmetry-orbits">
+        <code>(F1 F7 F2 F8)</code>
+        <code>(F3 F6 F4 F5)</code>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Interactive implementation: trinhtanphat</span>
+    <span>Data source: Ruslan Mizhaev, 2026</span>
+  </footer>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
