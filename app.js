@@ -31,11 +31,14 @@ const ui = {
   fitModel: document.getElementById('fitModel')
 };
 
-// Paper-inspired palette. Figure 2 explicitly shows F1 in orange and F3 in green.
+// Palette sampled from the published figures for the six visible reference colors.
+// Figure 2 explicitly identifies F1 as orange and F3 as green.
 const faceColors = [
-  '#d98232', '#6f82bd', '#69b78b', '#b69a55',
-  '#bf4f76', '#4e9697', '#8b6fb3', '#c9664c'
+  '#d37e3e', '#6a7cb8', '#69b885', '#aa8f52',
+  '#ba4f6f', '#4b8f8f', '#8b6fb3', '#c9664c'
 ];
+
+let paperReferenceMode = false;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x07131d);
@@ -87,9 +90,9 @@ function updateCameraClipping() {
   const near = Math.max(EXTENDED_ZOOM.minNear, distance * 0.0001);
   const far = Math.max(EXTENDED_ZOOM.farFloor, distance * 100);
 
-  // Keep the shape visible across the extended zoom range instead of letting
-  // the decorative fog completely swallow it at very large camera distances.
-  scene.fog.density = Math.min(0.025, 0.6 / distance);
+  // Keep the shape visible across the extended zoom range. Published-reference
+  // views intentionally disable fog so silhouette/color comparisons stay clean.
+  scene.fog.density = paperReferenceMode ? 0 : Math.min(0.025, 0.6 / distance);
 
   // Publish camera metrics to the DOM for reproducible browser-level audits.
   viewport.dataset.cameraDistance = String(distance);
@@ -293,19 +296,41 @@ function setCameraPose(position, up) {
   controls.update();
 }
 
+function setPaperReferenceMode(enabled) {
+  paperReferenceMode = enabled;
+  viewport.classList.toggle('paper-reference-mode', enabled);
+  viewport.dataset.paperReference = enabled ? 'true' : 'false';
+
+  camera.fov = enabled ? 12 : 42;
+  camera.updateProjectionMatrix();
+
+  scene.background.set(enabled ? 0xffffff : 0x07131d);
+  scene.fog.color.set(enabled ? 0xffffff : 0x07131d);
+  renderer.toneMapping = enabled ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = enabled ? 1 : 1.12;
+  renderer.shadowMap.enabled = !enabled;
+
+  updateFaceAppearance();
+  updateCameraClipping();
+}
+
 function cameraPreset(name) {
   const d = 12.6;
+  const isPaper = name.startsWith('paper');
+  setPaperReferenceMode(isPaper);
 
   // CAD semantics: front = X/Z projection, right = Y/Z projection, top = X/Y projection.
   if (name === 'front') setCameraPose([0, -d, 0], [0, 0, 1]);
   else if (name === 'right') setCameraPose([d, 0, 0], [0, 0, 1]);
   else if (name === 'top') setCameraPose([0, 0, d], [0, 1, 0]);
 
-  // Figure 1 contains representative, not canonical, camera directions.
-  // These three directions are recreated/calibrated from those published views.
-  else if (name === 'paper1') setCameraPose([0, 0, 18], [0, 1, 0]);
-  else if (name === 'paper2') setCameraPose([11.5, -13.5, 10.5], [0, 0, 1]);
-  else if (name === 'paper3') setCameraPose([18, 0, 0], [0, 0, 1]);
+  // Figure 1 view 1 is the +Z projection; view 3 is the -Y/front projection.
+  // A long camera distance + narrow FOV approximates the paper's flat projection.
+  // View 2 remains a calibrated oblique recreation because exact camera metadata
+  // is not part of the published certificate.
+  else if (name === 'paper1') setCameraPose([0, 0, 60], [0, 1, 0]);
+  else if (name === 'paper2') setCameraPose([32.8, -38.5, 29.9], [0, 0, 1]);
+  else if (name === 'paper3') setCameraPose([0, -60, 0], [0, 0, 1]);
   else setCameraPose([8.2, -8.2, 6.6], [0, 0, 1]);
 
   viewport.dataset.viewPreset = name;
@@ -342,9 +367,20 @@ function updateFaceAppearance() {
     mesh.material.opacity = effectiveOpacity;
     mesh.material.transparent = effectiveOpacity < 0.999;
     mesh.material.depthWrite = effectiveOpacity >= 0.999;
+
+    if (paperReferenceMode) {
+      // Unlit flat-color rendering makes visual comparison with the paper's
+      // representative figures meaningful instead of lighting-dependent.
+      mesh.material.color.set(0x000000);
+      mesh.material.emissive.set(faceColors[index]);
+      mesh.material.emissiveIntensity = 1;
+    } else {
+      mesh.material.color.set(faceColors[index]);
+      mesh.material.emissive.set(isSelected ? faceColors[index] : 0x000000);
+      mesh.material.emissiveIntensity = isSelected ? 0.12 : 0;
+    }
+
     mesh.material.needsUpdate = true;
-    mesh.material.emissive.set(isSelected ? faceColors[index] : 0x000000);
-    mesh.material.emissiveIntensity = isSelected ? 0.12 : 0;
   });
 
   document.querySelectorAll('.face-chip').forEach((button) => {
