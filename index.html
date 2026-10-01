@@ -34,10 +34,27 @@
   </header>
 
   <main class="layout">
+    <section class="purpose-card full-width" aria-labelledby="purposeTitle">
+      <div class="purpose-copy">
+        <p class="eyebrow">What is this app? · Ứng dụng này làm gì?</p>
+        <h2 id="purposeTitle">An interactive scientific viewer for exploring and independently checking a newly published genus-3 polyhedron.</h2>
+        <p><strong>Tiếng Việt:</strong> Ứng dụng biến bộ tọa độ nguyên và cấu trúc mặt được công bố trong preprint của Ruslan Mizhaev thành mô hình 3D có thể xoay, zoom rất sâu/rất xa và kiểm tra trực quan. Bạn có thể xem từng mặt, từng đỉnh, phương trình mặt phẳng, quan hệ kề, đối xứng C₄ và các bất biến topo như Euler characteristic và genus.</p>
+        <p><strong>English:</strong> It is not a CAD editor or an artist's approximation. It is a reproducible visualization and verification companion for the exact published coordinate certificate.</p>
+      </div>
+      <div class="purpose-grid" aria-label="Main uses of the application">
+        <div><strong>Explore</strong><span>Rotate, pan and zoom from extreme close-up to a very distant overview.</span></div>
+        <div><strong>Inspect</strong><span>Click any face or vertex to see exact coordinates, face walks and plane equations.</span></div>
+        <div><strong>Verify</strong><span>Cross-check 24V / 36E / 8F, genus 3, complete face adjacency and C₄ symmetry.</span></div>
+      </div>
+    </section>
+
     <section class="viewer-card" aria-label="Interactive 3D viewer">
       <div id="viewport" class="viewport">
         <div class="viewer-toolbar" role="toolbar" aria-label="View controls">
-          <button id="resetCamera" type="button">Reset</button>
+          <button id="resetCamera" type="button" title="Reset symmetry and camera">Reset</button>
+          <button id="fitModel" type="button" title="Fit the model back into a comfortable overview">Fit</button>
+          <button id="zoomIn" type="button" title="Zoom in strongly; wheel/pinch allows continuous extreme zoom">Zoom +</button>
+          <button id="zoomOut" type="button" title="Zoom out strongly; wheel/pinch allows continuous extreme zoom">Zoom −</button>
           <button class="preset" data-view="iso" type="button">Iso</button>
           <button class="preset" data-view="front" type="button">Front</button>
           <button class="preset" data-view="top" type="button">Top</button>
@@ -45,7 +62,7 @@
           <button id="symmetryStep" type="button" title="Apply T(x,y,z)=(y,-x,-z)">T step · 0/4</button>
         </div>
 
-        <div class="viewer-hint">Drag to orbit · wheel to zoom · click a face or vertex</div>
+        <div class="viewer-hint">Drag to orbit · wheel/pinch for extended zoom · click a face or vertex</div>
 
         <div class="viewer-status" aria-live="polite">
           <span id="hoverStatus">Ready</span>

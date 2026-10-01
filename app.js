@@ -25,7 +25,10 @@ const ui = {
   isolateFace: document.getElementById('isolateFace'),
   opacity: document.getElementById('opacity'),
   opacityValue: document.getElementById('opacityValue'),
-  showAllFaces: document.getElementById('showAllFaces')
+  showAllFaces: document.getElementById('showAllFaces'),
+  zoomIn: document.getElementById('zoomIn'),
+  zoomOut: document.getElementById('zoomOut'),
+  fitModel: document.getElementById('fitModel')
 };
 
 const faceColors = [
@@ -37,7 +40,14 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x07131d);
 scene.fog = new THREE.FogExp2(0x07131d, 0.025);
 
-const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 200);
+const EXTENDED_ZOOM = {
+  minDistance: 0.035,
+  maxDistance: 100000,
+  minNear: 0.0001,
+  farFloor: 500
+};
+
+const camera = new THREE.PerspectiveCamera(42, 1, EXTENDED_ZOOM.minNear, EXTENDED_ZOOM.farFloor);
 camera.position.set(7.8, 5.6, 8.2);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -62,12 +72,51 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.055;
 controls.rotateSpeed = 0.7;
-controls.zoomSpeed = 0.8;
-controls.minDistance = 4.2;
-controls.maxDistance = 24;
+controls.zoomSpeed = 1.15;
+controls.minDistance = EXTENDED_ZOOM.minDistance;
+controls.maxDistance = EXTENDED_ZOOM.maxDistance;
 controls.target.set(0, 0, 0);
 controls.autoRotate = false;
 controls.autoRotateSpeed = 1.15;
+
+function updateCameraClipping() {
+  const distance = Math.max(EXTENDED_ZOOM.minDistance, camera.position.distanceTo(controls.target));
+  const near = Math.max(EXTENDED_ZOOM.minNear, distance * 0.0001);
+  const far = Math.max(EXTENDED_ZOOM.farFloor, distance * 100);
+
+  // Keep the shape visible across the extended zoom range instead of letting
+  // the decorative fog completely swallow it at very large camera distances.
+  scene.fog.density = Math.min(0.025, 0.6 / distance);
+
+  // Publish camera metrics to the DOM for reproducible browser-level audits.
+  viewport.dataset.cameraDistance = String(distance);
+  viewport.dataset.cameraNear = String(near);
+  viewport.dataset.cameraFar = String(far);
+
+  if (Math.abs(camera.near - near) > near * 0.001 || Math.abs(camera.far - far) > far * 0.001) {
+    camera.near = near;
+    camera.far = far;
+    camera.updateProjectionMatrix();
+  }
+}
+
+function setCameraDistance(distance) {
+  const clamped = THREE.MathUtils.clamp(distance, controls.minDistance, controls.maxDistance);
+  const offset = camera.position.clone().sub(controls.target);
+  if (offset.lengthSq() < 1e-12) offset.set(1, 0.65, 1);
+  offset.setLength(clamped);
+  camera.position.copy(controls.target).add(offset);
+  updateCameraClipping();
+  controls.update();
+}
+
+function zoomByFactor(factor) {
+  const currentDistance = camera.position.distanceTo(controls.target);
+  setCameraDistance(currentDistance * factor);
+}
+
+controls.addEventListener('change', updateCameraClipping);
+updateCameraClipping();
 
 scene.add(new THREE.HemisphereLight(0xcff3ff, 0x132333, 1.65));
 
@@ -435,6 +484,9 @@ ui.showLabels.addEventListener('change', () => { labelGroup.visible = ui.showLab
 ui.isolateFace.addEventListener('change', updateFaceAppearance);
 ui.autoRotate.addEventListener('change', () => { controls.autoRotate = ui.autoRotate.checked; });
 ui.resetCamera.addEventListener('click', resetCamera);
+ui.zoomIn.addEventListener('click', () => zoomByFactor(0.55));
+ui.zoomOut.addEventListener('click', () => zoomByFactor(1.8));
+ui.fitModel.addEventListener('click', () => cameraPreset('iso'));
 ui.symmetryStep.addEventListener('click', () => applySymmetryStep(symmetryStep + 1));
 ui.showAllFaces.addEventListener('click', () => {
   ui.isolateFace.checked = false;
@@ -479,6 +531,7 @@ let fpsStart = performance.now();
 function animate(now) {
   requestAnimationFrame(animate);
   controls.update();
+  updateCameraClipping();
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
 
