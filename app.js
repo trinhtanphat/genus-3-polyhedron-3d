@@ -31,9 +31,10 @@ const ui = {
   fitModel: document.getElementById('fitModel')
 };
 
+// Paper-inspired palette. Figure 2 explicitly shows F1 in orange and F3 in green.
 const faceColors = [
-  '#2dd4bf', '#60a5fa', '#f97316', '#c084fc',
-  '#22c55e', '#f43f5e', '#eab308', '#38bdf8'
+  '#d98232', '#6f82bd', '#69b78b', '#b69a55',
+  '#bf4f76', '#4e9697', '#8b6fb3', '#c9664c'
 ];
 
 const scene = new THREE.Scene();
@@ -48,7 +49,9 @@ const EXTENDED_ZOOM = {
 };
 
 const camera = new THREE.PerspectiveCamera(42, 1, EXTENDED_ZOOM.minNear, EXTENDED_ZOOM.farFloor);
-camera.position.set(7.8, 5.6, 8.2);
+// CAD convention: X/Y define the horizontal plane and Z is vertical.
+camera.up.set(0, 0, 1);
+camera.position.set(8.2, -8.2, 6.6);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -179,14 +182,16 @@ const faceMeshes = new Map();
 const baseOpacity = () => Number(ui.opacity.value);
 
 data.faces.forEach((face, index) => {
+  const initialOpacity = baseOpacity();
   const material = new THREE.MeshStandardMaterial({
     color: faceColors[index],
     side: THREE.DoubleSide,
-    transparent: true,
-    opacity: baseOpacity(),
-    roughness: 0.62,
-    metalness: 0.025,
-    depthWrite: true,
+    transparent: initialOpacity < 0.999,
+    opacity: initialOpacity,
+    roughness: 0.92,
+    metalness: 0,
+    flatShading: true,
+    depthWrite: initialOpacity >= 0.999,
     polygonOffset: true,
     polygonOffsetFactor: 1,
     polygonOffsetUnits: 1
@@ -253,7 +258,7 @@ for (let id = 1; id <= 24; id++) {
   label.textContent = `v${id}`;
   const labelObject = new CSS2DObject(label);
   labelObject.position.copy(vec(id));
-  labelObject.position.y += 0.13;
+  labelObject.position.z += 0.13;
   labelGroup.add(labelObject);
   labelObjects.set(id, labelObject);
 }
@@ -278,15 +283,30 @@ function applySymmetryStep(step) {
   ui.symmetryStep.textContent = `T step · ${symmetryStep}/4`;
 }
 
-function cameraPreset(name) {
-  camera.up.set(0, 1, 0);
-  const distance = 10.5;
-  if (name === 'front') camera.position.set(0, 0.4, distance);
-  else if (name === 'top') camera.position.set(0.001, distance, 0.001);
-  else if (name === 'side') camera.position.set(distance, 0.4, 0);
-  else camera.position.set(7.8, 5.6, 8.2);
+function setCameraPose(position, up) {
+  camera.up.set(...up);
+  camera.position.set(...position);
   controls.target.set(0, 0, 0);
+  updateCameraClipping();
   controls.update();
+}
+
+function cameraPreset(name) {
+  const d = 12.6;
+
+  // CAD semantics: front = X/Z projection, right = Y/Z projection, top = X/Y projection.
+  if (name === 'front') setCameraPose([0, -d, 0], [0, 0, 1]);
+  else if (name === 'right') setCameraPose([d, 0, 0], [0, 0, 1]);
+  else if (name === 'top') setCameraPose([0, 0, d], [0, 1, 0]);
+
+  // Figure 1 contains representative, not canonical, camera directions.
+  // These three directions are recreated/calibrated from those published views.
+  else if (name === 'paper1') setCameraPose([0, 0, 18], [0, 1, 0]);
+  else if (name === 'paper2') setCameraPose([11.5, -13.5, 10.5], [0, 0, 1]);
+  else if (name === 'paper3') setCameraPose([18, 0, 0], [0, 0, 1]);
+  else setCameraPose([8.2, -8.2, 6.6], [0, 0, 1]);
+
+  viewport.dataset.viewPreset = name;
 }
 
 function resetCamera() {
@@ -314,7 +334,13 @@ function updateFaceAppearance() {
     const mesh = faceMeshes.get(face.id);
     const isSelected = face.id === selectedFaceId;
     mesh.visible = ui.showFaces.checked && (!isolate || isSelected);
-    mesh.material.opacity = isSelected ? Math.min(1, opacity + 0.18) : (selectedFaceId ? opacity * 0.72 : opacity);
+    const effectiveOpacity = isSelected
+      ? Math.min(1, opacity + 0.18)
+      : (selectedFaceId ? opacity * 0.72 : opacity);
+    mesh.material.opacity = effectiveOpacity;
+    mesh.material.transparent = effectiveOpacity < 0.999;
+    mesh.material.depthWrite = effectiveOpacity >= 0.999;
+    mesh.material.needsUpdate = true;
     mesh.material.emissive.set(isSelected ? faceColors[index] : 0x000000);
     mesh.material.emissiveIntensity = isSelected ? 0.12 : 0;
   });
