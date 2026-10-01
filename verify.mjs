@@ -164,6 +164,84 @@ for (const face of faces) {
   );
 }
 
+// Independently enumerate automorphisms of the bipartite face-vertex incidence structure.
+// Every vertex has exactly three incident faces. In this realization the 24 face triples
+// are distinct, so a face permutation preserving those triples uniquely induces the vertex map.
+const faceIds = faces.map((face) => face.id);
+const facePosition = new Map(faceIds.map((id, index) => [id, index]));
+const canonicalTriple = (indices) => [...indices].sort((a, b) => a - b).join(',');
+
+const incidenceTriples = [];
+for (let id = 1; id <= 24; id++) {
+  const incident = [...vertexFaceIncidence.get(id)].map((faceId) => facePosition.get(faceId));
+  assert.equal(incident.length, 3, 'vertex ' + id + ' must encode a 3-face incidence triple');
+  incidenceTriples.push(canonicalTriple(incident));
+}
+const incidenceTripleSet = new Set(incidenceTriples);
+assert.equal(incidenceTripleSet.size, 24, 'all 24 face-incidence triples must be distinct');
+
+function* permutations(values, prefix = []) {
+  if (values.length === 0) {
+    yield prefix;
+    return;
+  }
+  for (let i = 0; i < values.length; i++) {
+    yield* permutations([...values.slice(0, i), ...values.slice(i + 1)], [...prefix, values[i]]);
+  }
+}
+
+const faceVertexCandidates = [];
+const surfaceAutomorphisms = [];
+const identityPermutation = faceIds.map((_, index) => index);
+const tripleToVertex = new Map(incidenceTriples.map((triple, index) => [triple, index + 1]));
+
+for (const permutation of permutations(identityPermutation)) {
+  let preservesFaceVertexIncidence = true;
+  for (const triple of incidenceTriples) {
+    const transformed = triple.split(',').map(Number).map((index) => permutation[index]);
+    if (!incidenceTripleSet.has(canonicalTriple(transformed))) {
+      preservesFaceVertexIncidence = false;
+      break;
+    }
+  }
+  if (!preservesFaceVertexIncidence) continue;
+
+  faceVertexCandidates.push(permutation);
+
+  const vertexPermutation = new Map();
+  for (let id = 1; id <= 24; id++) {
+    const transformedTriple = incidenceTriples[id - 1]
+      .split(',')
+      .map(Number)
+      .map((index) => permutation[index]);
+    const targetVertex = tripleToVertex.get(canonicalTriple(transformedTriple));
+    assert.ok(targetVertex, 'face-incidence candidate must induce a target vertex');
+    vertexPermutation.set(id, targetVertex);
+  }
+
+  const preservesFullBoundaryStructure = faces.every((face, sourceIndex) => {
+    const transformedWalk = face.walk.map((vertexId) => vertexPermutation.get(vertexId));
+    const targetFace = faces[permutation[sourceIndex]];
+    return cyclicEquivalent(transformedWalk, targetFace.walk);
+  });
+
+  if (preservesFullBoundaryStructure) surfaceAutomorphisms.push(permutation);
+}
+
+assert.equal(faceVertexCandidates.length, 8, 'face-vertex incidence alone should yield 8 candidates');
+assert.equal(surfaceAutomorphisms.length, 4, 'full cell-complex automorphism group must have exactly four elements');
+
+const tPermutation = faceIds.map((faceId) => facePosition.get(expectedFaceImage.get(faceId)));
+const permutationKey = (permutation) => permutation.join(',');
+const expectedTPowers = new Set();
+let power = identityPermutation;
+for (let k = 0; k < 4; k++) {
+  expectedTPowers.add(permutationKey(power));
+  power = power.map((index) => tPermutation[index]);
+}
+assert.equal(expectedTPowers.size, 4, 'T must have order exactly 4 on faces');
+assert.deepEqual(new Set(surfaceAutomorphisms.map(permutationKey)), expectedTPowers, 'every full cell-complex automorphism must be a power of T');
+
 console.log('✓ exact planarity: 72/72 face-vertex incidences');
 console.log('✓ topology: 24 vertices, 36 edges, 8 nonagonal faces');
 console.log('✓ manifold incidence: 2 faces per edge, degree 3 at every vertex');
@@ -171,4 +249,6 @@ console.log('✓ orientability: published (+,+,-,-,-,-,+,+) orientation reverses
 console.log('✓ Euler characteristic χ = -4, hence genus g = 3');
 console.log('✓ complete face adjacency: 20 single-edge pairs + 8 double-edge pairs');
 console.log('✓ C4 generator T preserves vertices, maps faces through the published cycles, and satisfies T^4 = identity');
+console.log('✓ exhaustive 8! enumeration: 8 face-vertex candidates, exactly 4 full cell-complex automorphisms, all powers of T');
+console.log('✓ geometric symmetry group is exactly C4: four T-powers are realized and no fifth symmetry can exist');
 console.log('All exact combinatorial/algebraic checks passed.');
